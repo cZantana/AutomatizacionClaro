@@ -10,6 +10,8 @@ import os
 from tabulate import tabulate  # Para mostrar tablas en consola de forma bonita
 from PIL import Image
 
+import RenderizarTablaHTML as RtHTML
+
 # ============================
 # 1. FUNCION PARA ELIMINAR TEXTO DEL PDF
 # ============================
@@ -68,7 +70,7 @@ def eliminar_texto_preciso(pdf_path, output_path, altura_pagina):
 # ============================
 # 2. FUNCION PARA RECORTAR TABLAS Y GUARDAR COMO IMAGEN DE ALTA CALIDAD
 # ============================
-def crop_and_save_image(original_pdf, page_number, coords, output_path):
+def crop_and_save_image(original_pdf, page_number, coords, output_path,tabla_actual):
     """ Recorta la tabla y la guarda como imagen de alta calidad. """
     left, top, right, bottom = coords
     rect = fitz.Rect(left-3, top-4, right+6, bottom+4)
@@ -82,6 +84,8 @@ def crop_and_save_image(original_pdf, page_number, coords, output_path):
 
     img.save(output_path, format="PNG", dpi=(300, 300))  # Guardar con alta resolución
     print(f"Imagen de tabla guardada en: {output_path}")
+
+    RtHTML.image_to_HTML(output_path,tabla_actual)
 
 # ============================
 # 3. FUNCION PRINCIPAL: OBTENER TABLAS USANDO EL PDF ORIGINAL
@@ -134,9 +138,61 @@ def show_pdfplumber_tables_with_buttons(pdf_path):
                     tabla_formateada = tabulate(rows, headers=headers, tablefmt="fancy_grid")
                     print("    Contenido de la tabla:\n", tabla_formateada)
 
-                # Guardar la tabla recortada como IMAGEN desde el PDF SIN TEXTO
-                output_img_path = os.path.join(output_folder, f"tabla_{page_idx + 1}_{table_idx + 1}.png")
-                crop_and_save_image(pdf_sin_texto, page_idx, (x0, top, x1, bottom), output_img_path)
+                words = page.extract_words()
+                
+                print("\n    Texto dentro de la tabla por celda:")
+
+                celda_texto_centros = []  # Lista para almacenar datos de las celdas con coordenadas promedio
+
+                for row_idx, row in enumerate(table.rows):  
+                    for col_idx, cell in enumerate(row.cells):
+                        if cell is None:
+                            continue
+                        
+                        # Extraer coordenadas de la celda
+                        cell_x0, cell_top, cell_x1, cell_bottom = cell  
+
+                        # Filtrar palabras dentro de esta celda
+                        words_in_cell = [
+                            word for word in words
+                            if cell_x0 <= float(word['x0']) <= cell_x1 and cell_top <= float(word['top']) <= cell_bottom
+                        ]
+
+                        print(f"      Celda ({row_idx}, {col_idx}) | BBox: ({cell_x0:.2f}, {cell_top:.2f}) - ({cell_x1:.2f}, {cell_bottom:.2f})")
+                        
+                        if words_in_cell:
+                            # Calcular promedios de coordenadas
+                            avg_x0 = sum(float(word['x0']) for word in words_in_cell) / len(words_in_cell)
+                            avg_y0 = sum(float(word['top']) for word in words_in_cell) / len(words_in_cell)
+                            avg_x1 = sum(float(word['x1']) for word in words_in_cell) / len(words_in_cell)
+                            avg_y1 = sum(float(word['bottom']) for word in words_in_cell) / len(words_in_cell)
+
+                            # Obtener el centro de la celda basado en las coordenadas promedio
+                            centro_x = (avg_x0 + avg_x1) / 2
+                            centro_y = (avg_y0 + avg_y1) / 2
+
+                            print(f"        - Centro promedio del texto: ({centro_x:.2f}, {centro_y:.2f})")
+
+                            for word in words_in_cell:
+                                print(f"        - '{word['text']}' en ({word['x0']}, {word['top']}) - ({word['x1']}, {word['bottom']})")
+
+                            # Guardar información de la celda con su centroide promedio
+                            celda_texto_centros.append({
+                                "fila": row_idx,
+                                "columna": col_idx,
+                                "bbox": (cell_x0, cell_top, cell_x1, cell_bottom),
+                                "centro_texto": (centro_x, centro_y),
+                                "contenido": " ".join(word["text"] for word in words_in_cell)
+                            })
+
+                        else:
+                            print("        (Celda vacía)")
+
+                output_img_path = "imagenTemporal.png"
+                tabla_actual = os.path.join(output_folder, f"tabla_{page_idx + 1}_{table_idx + 1}.png")
+                crop_and_save_image(pdf_sin_texto, page_idx, (x0, top, x1, bottom), output_img_path,tabla_actual)
+
+
 
         for t in tables:
             x0, top, x1, bottom = t.bbox
@@ -175,5 +231,5 @@ def show_pdfplumber_tables_with_buttons(pdf_path):
     pdf_sin_texto.close()
 
 if __name__ == "__main__":
-    ruta_pdf = "PTAR 5143 Tarifa Esp_Aceleración_NTC_TC_V25_0225.pdf"
+    ruta_pdf = "PTAR 5071 Tarifa Esp_NuevosCamposdeJuego_NTC_TC_V21_0225.pdf"
     show_pdfplumber_tables_with_buttons(ruta_pdf)
