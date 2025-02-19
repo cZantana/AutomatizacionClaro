@@ -23,11 +23,11 @@ EXCEL_GENERADO = "intentoListado Claro Hogar Febrero 2025.xlsx"
 NombreListadoReferencia = "Listado_Referencia_Febrero_2025.xlsx"
 NombreMapaArchivosADescargar = 'MAPA_DE_ARCHIVOS_A_DESCARGAR.xlsx'
 
-ColumnaComparar="B"
-ColumnaConectados="D"
-ColumnaCategoria="A"
+ColumnaComparar="B" #Columna donde esta el nombre del archivo, para verificar que sea igual al titulo por dentro del pdf
+ColumnaConectados="D" #Columna con los links de conectados
+ColumnaCategoria="A" #Columna donde esa la categoria
 
-NombreHojaReferencia = "HOGAR 2025"
+NombreHojaReferencia = "HOGAR 2025" #Nombre de la hoja dentro del excel
 
 
 
