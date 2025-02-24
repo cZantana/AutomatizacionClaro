@@ -63,6 +63,7 @@ Esto generará un nuevo archivo Excel con todos los archivos de SharePoint y sus
 ### 3. Filtrar archivos de Claro Hogar
 
 Crear un nuevo archivo Excel que contenga solo los archivos de Claro Hogar. Este archivo es necesario para el funcionamiento del script de generación del listado.
+(Se procede de la misma forma para el listado automático de Claro Móvil Postpago y Claro Móvil Prepago, creando un archivo Excel que contenga solo los archivos a descargar necesarios)
 
 ![Archivos Claro Hogar aislados](https://github.com/cZantana/AutomatizacionClaro/blob/obtencion-de-tablas-del-pdf/Readme%20Listado%20Claro%20Hogar%20Febrero%202025/Img%20%234.%20Archivos%20Claro%20Hogar%20aislados.png)
 
