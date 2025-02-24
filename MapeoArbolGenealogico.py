@@ -14,8 +14,6 @@ def modify_link(original_link):
             new_link = original_link[:domain_end] + "/:w:/r" + original_link[domain_end:] + "?csf=1&web=1"
         elif original_link.endswith(".pptx") or original_link.endswith(".ppt"):
             new_link = original_link[:domain_end] + "/:p:/r" + original_link[domain_end:] + "?csf=1&web=1"
-        elif original_link.endswith(".md"):
-            new_link = original_link + "?web=1"
         else:
             new_link = original_link
         return new_link
@@ -76,14 +74,14 @@ def write_tree_to_excel(tree, ws, hyperlink_dict, base_ruta, level=1, row=2, rut
             original_link = hyperlink_dict[clave]
             modified_link = modify_link(original_link)
             
-            ws.cell(row=row, column=level + 1).value = "Abrir Modificado"
+            ws.cell(row=row, column=level + 1).value = "Link Online"
             ws.cell(row=row, column=level + 1).hyperlink = modified_link
             ws.cell(row=row, column=level + 1).fill = link_fill
             ws.cell(row=row, column=level + 1).alignment = Alignment(horizontal='center')
             ws.cell(row=row, column=level + 1).font = Font(underline='single')
             ws.cell(row=row, column=level + 1).border = border
 
-            ws.cell(row=row, column=level + 2).value = "Abrir Original"
+            ws.cell(row=row, column=level + 2).value = "Link de Descarga"
             ws.cell(row=row, column=level + 2).hyperlink = original_link
             ws.cell(row=row, column=level + 2).fill = link_fill
             ws.cell(row=row, column=level + 2).alignment = Alignment(horizontal='center')
@@ -180,7 +178,7 @@ def write_subfolders_to_sheets(tree_structure, workbook, hyperlink_dict, base_ru
         if isinstance(subfolder, dict) and 'name' in subfolder and 'children' in subfolder:
             # Crear una nueva hoja con el nombre de la subcarpeta
             ws = workbook.create_sheet(title=subfolder['name'][:31])  # Limita el nombre de la hoja a 31 caracteres
-            ws.append(['Estructura de Carpetas y Archivos', 'Hipervínculo Modificado', 'Hipervínculo Original'])
+            ws.append(['', '', ''])
             
             # Llamar a `write_tree_to_excel` para escribir el contenido de la subcarpeta en la hoja
             write_tree_to_excel(subfolder, ws, hyperlink_dict, base_ruta)
@@ -220,7 +218,7 @@ def cambiar_nombres_carpetas(excel_file_path):
 
 
 # Ajustes al código principal para cargar el Excel y construir el árbol sin la carpeta principal
-excel_file_path = 'Query Vigencia Febrero 2025.xlsx'
+excel_file_path = 'query Proyecto comercial.xlsx'
 
 cambiar_nombres_carpetas(excel_file_path)
 
